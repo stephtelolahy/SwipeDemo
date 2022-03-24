@@ -88,9 +88,10 @@ class ItemListFragment : Fragment() {
       items.add(PlaceholderItem(i.toString(), "Item $i", "Details"))
     }
 
-    recyclerView.adapter = RecyclerviewAdapter(
-      items, itemDetailFragmentContainer
-    )
+//    recyclerView.adapter = RecyclerviewAdapter(
+//      items, itemDetailFragmentContainer
+//    )
+    recyclerView.adapter = SwipeRecyclerviewAdapter(items)
   }
 
   override fun onDestroyView() {
