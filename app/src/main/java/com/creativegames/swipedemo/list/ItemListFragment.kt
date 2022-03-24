@@ -1,6 +1,8 @@
 package com.creativegames.swipedemo.list
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -29,30 +31,15 @@ class ItemListFragment : Fragment() {
    * Currently provides a toast when Ctrl + Z and Ctrl + F
    * are triggered
    */
-  private val unhandledKeyEventListenerCompat = ViewCompat.OnUnhandledKeyEventListenerCompat { v, event ->
-    if (event.keyCode == KeyEvent.KEYCODE_Z && event.isCtrlPressed) {
-      Toast.makeText(
-        v.context,
-        "Undo (Ctrl + Z) shortcut triggered",
-        Toast.LENGTH_LONG
-      ).show()
-      true
-    } else if (event.keyCode == KeyEvent.KEYCODE_F && event.isCtrlPressed) {
-      Toast.makeText(
-        v.context,
-        "Find (Ctrl + F) shortcut triggered",
-        Toast.LENGTH_LONG
-      ).show()
-      true
-    }
-    false
-  }
+
 
   private var _binding: FragmentItemListBinding? = null
 
   // This property is only valid between onCreateView and
   // onDestroyView.
   private val binding get() = _binding!!
+
+  private lateinit var onTouchListener: RecyclerTouchListener
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?,
@@ -67,15 +54,35 @@ class ItemListFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
 
-    ViewCompat.addOnUnhandledKeyEventListener(view, unhandledKeyEventListenerCompat)
-
-    val recyclerView: RecyclerView = binding.itemList
+    val recyclerView: RecyclerView = binding.recyclerView
 
     // Leaving this not using view binding as it relies on if the view is visible the current
     // layout configuration (layout, layout-sw600dp)
     val itemDetailFragmentContainer: View? = view.findViewById(R.id.item_detail_nav_container)
 
     setupRecyclerView(recyclerView, itemDetailFragmentContainer)
+  }
+
+  override fun onStart() {
+    super.onStart()
+
+    Handler(Looper.getMainLooper()).postDelayed({
+      onTouchListener.openSwipeOptions(0)
+    }, 1000)
+
+    Handler(Looper.getMainLooper()).postDelayed({
+      onTouchListener.closeVisibleBG(null)
+    }, 3000)
+  }
+
+  override fun onResume() {
+    super.onResume()
+    binding.recyclerView.addOnItemTouchListener(onTouchListener)
+  }
+
+  override fun onPause() {
+    super.onPause()
+    binding.recyclerView.removeOnItemTouchListener(onTouchListener)
   }
 
   private fun setupRecyclerView(
@@ -88,10 +95,29 @@ class ItemListFragment : Fragment() {
       items.add(PlaceholderItem(i.toString(), "Item $i", "Details"))
     }
 
-//    recyclerView.adapter = RecyclerviewAdapter(
-//      items, itemDetailFragmentContainer
-//    )
-    recyclerView.adapter = SwipeRecyclerviewAdapter(items)
+    recyclerView.adapter = RecyclerviewAdapter(
+      items, itemDetailFragmentContainer
+    )
+    //recyclerView.adapter = SwipeRecyclerviewAdapter(items)
+
+    onTouchListener = RecyclerTouchListener(activity, recyclerView)
+    onTouchListener
+      .setClickable(object : RecyclerTouchListener.OnRowClickListener {
+        override fun onRowClicked(position: Int) {
+          Toast.makeText(activity, items[position].content, Toast.LENGTH_SHORT).show()
+        }
+
+        override fun onIndependentViewClicked(independentViewID: Int, position: Int) {}
+      })
+      .setSwipeOptionViews(R.id.delete_task)
+      .setSwipeable(R.id.rowFG, R.id.rowBG, object : RecyclerTouchListener.OnSwipeOptionsClickListener {
+
+        override fun onSwipeOptionClicked(viewID: Int, position: Int) {
+          Toast.makeText(activity, "Edit", Toast.LENGTH_SHORT).show()
+        }
+
+      })
+    recyclerView.addOnItemTouchListener(onTouchListener)
   }
 
   override fun onDestroyView() {

@@ -28,8 +28,8 @@ class RecyclerviewAdapter(
 
   override fun onBindViewHolder(holder: ViewHolder, position: Int) {
     val item = values[position]
-    holder.idView.text = item.id
-    holder.contentView.text = item.content
+    holder.idView.text = item.content
+    holder.contentView.text = item.details
 
     with(holder.itemView) {
       tag = item
@@ -96,8 +96,8 @@ class RecyclerviewAdapter(
   override fun getItemCount() = values.size
 
   inner class ViewHolder(binding: ItemListContentBinding) : RecyclerView.ViewHolder(binding.root) {
-    val idView: TextView = binding.idText
-    val contentView: TextView = binding.content
+    val idView: TextView = binding.taskName
+    val contentView: TextView = binding.taskDesc
   }
 
 }

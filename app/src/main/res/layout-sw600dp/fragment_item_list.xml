@@ -7,7 +7,7 @@
     xmlns:tools="http://schemas.android.com/tools" >
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/item_list"
+        android:id="@+id/recycler_view"
         android:name="com.creativegames.swipedemo.ItemListFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
