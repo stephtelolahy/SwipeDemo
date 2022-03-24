@@ -18,6 +18,6 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         app:layoutManager="LinearLayoutManager"
-        tools:context="com.creativegames.swipedemo.ItemDetailHostActivity"
+        tools:context="com.creativegames.swipedemo.MainActivity"
         tools:listitem="@layout/item_list_content" />
 </androidx.constraintlayout.widget.ConstraintLayout>

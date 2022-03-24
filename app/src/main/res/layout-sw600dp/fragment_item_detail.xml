@@ -13,5 +13,5 @@
         android:layout_height="match_parent"
         android:padding="16dp"
         android:textIsSelectable="true"
-        tools:context="com.creativegames.swipedemo.ItemDetailFragment" />
+        tools:context="com.creativegames.swipedemo.detail.ItemDetailFragment" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

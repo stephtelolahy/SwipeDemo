@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/guideline"
         app:layout_constraintTop_toTopOf="parent"
-        tools:context="com.creativegames.swipedemo.ItemDetailHostActivity"
+        tools:context="com.creativegames.swipedemo.MainActivity"
         tools:listitem="@layout/item_list_content" />
 
     <androidx.constraintlayout.widget.Guideline
