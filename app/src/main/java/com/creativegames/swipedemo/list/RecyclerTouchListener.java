@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener, OnActivityTouchListener {
+public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
   private static final String TAG = "RecyclerTouchListener";
   final Handler handler = new Handler();
   Activity act;
@@ -34,15 +34,16 @@ public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener, 
   List<Integer> optionViews;
   Set<Integer> ignoredViewTypes;
   // Cached ViewConfiguration and system-wide constant values
-  private int touchSlop;
-  private int minFlingVel;
-  private int maxFlingVel;
-  private long ANIMATION_STANDARD = 300;
-  private long ANIMATION_CLOSE = 150;
+  private final int touchSlop;
+  private final int minFlingVel;
+  private final int maxFlingVel;
+  private final long ANIMATION_STANDARD = 300;
+  private final long ANIMATION_CLOSE = 150;
   // Fixed properties
   private RecyclerView rView;
   // private SwipeListener mSwipeListener;
-  private int bgWidth = 1, bgWidthLeft = 1; // 1 and not 0 to prevent dividing by zero
+  private int bgWidth = 1;
+  // 1 and not 0 to prevent dividing by zero
   // Transient properties
   // private List<PendingDismissData> mPendingDismisses = new ArrayList<>();
   private int mDismissAnimationRefCount = 0;
@@ -73,8 +74,7 @@ public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener, 
   // user choices
   private boolean clickable = false;
   private boolean longClickable = false;
-  private boolean swipeable = false, swipeableLeftOptions = false;
-  private int LONG_CLICK_DELAY = 800;
+  private boolean swipeable = false;
   private boolean longClickVibrate;
   Runnable mLongPressed = new Runnable() {
     public void run() {
@@ -205,9 +205,6 @@ public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener, 
     fgViewID = foregroundID;
     bgViewID = backgroundID;
     this.mBgClickListener = listener;
-
-    if (act instanceof RecyclerTouchListenerHelper)
-      ((RecyclerTouchListenerHelper) act).setOnActivityTouchListener(this);
 
     DisplayMetrics displaymetrics = new DisplayMetrics();
     act.getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
@@ -502,6 +499,7 @@ public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener, 
 
           if (longClickable) {
             mLongClickPerformed = false;
+            int LONG_CLICK_DELAY = 800;
             handler.postDelayed(mLongPressed, LONG_CLICK_DELAY);
           }
           if (swipeable) {
@@ -864,17 +862,6 @@ public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener, 
     return false;
   }
 
-  /**
-   * Gets coordinates from Activity and closes any
-   * swiped rows if touch happens outside the recycler view
-   */
-  @Override
-  public void getTouchCoordinates(MotionEvent ev) {
-      int y = (int) ev.getRawY();
-      if (swipeable && bgVisible && ev.getActionMasked() == MotionEvent.ACTION_DOWN
-              && y < heightOutsideRView) closeVisibleBG(null);
-  }
-
   private boolean shouldIgnoreAction(int touchedPosition) {
     return rView == null || ignoredViewTypes.contains(rView.getAdapter().getItemViewType(touchedPosition));
   }
@@ -899,10 +886,6 @@ public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener, 
 
   public interface OnSwipeOptionsClickListener {
     void onSwipeOptionClicked(int viewID, int position);
-  }
-
-  public interface RecyclerTouchListenerHelper {
-    void setOnActivityTouchListener(OnActivityTouchListener listener);
   }
 
   public interface OnSwipeListener {
