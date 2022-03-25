@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.creativegames.swipedemo.databinding.FragmentItemDetailBinding
-import com.creativegames.swipedemo.list.PlaceholderItem
+import com.creativegames.swipedemo.model.PlaceholderItem
 import com.google.android.material.appbar.CollapsingToolbarLayout
 
 /**

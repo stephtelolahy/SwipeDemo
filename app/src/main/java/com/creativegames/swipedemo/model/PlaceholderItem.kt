@@ -1,4 +1,4 @@
-package com.creativegames.swipedemo.list
+package com.creativegames.swipedemo.model
 
 /**
  * A placeholder item representing a piece of content.

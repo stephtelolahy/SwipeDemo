@@ -9,12 +9,12 @@
   <LinearLayout
       android:id="@+id/rowBG"
       android:layout_width="wrap_content"
-      android:layout_height="70dp"
+      android:layout_height="100dp"
       android:layout_alignParentRight="true"
       android:background="#d65819"
       android:gravity="right"
       android:orientation="horizontal"
-      android:paddingStart="100dp"
+      android:paddingStart="60dp"
       >
 
     <RelativeLayout
@@ -39,7 +39,7 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_gravity="center"
-            android:src="@android:drawable/ic_delete"
+            android:src="@android:drawable/ic_input_add"
             app:tint="@android:color/white"
             />
       </LinearLayout>
@@ -50,7 +50,7 @@
   <LinearLayout
       android:id="@+id/rowFG"
       android:layout_width="match_parent"
-      android:layout_height="70dp"
+      android:layout_height="wrap_content"
       android:background="@android:color/white"
       android:clickable="true"
       android:elevation="0dp"
@@ -61,7 +61,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="100dp"
         >
 
       <TextView
@@ -69,10 +69,7 @@
           style="@style/TextAppearance.AppCompat.Headline"
           android:layout_width="0dp"
           android:layout_height="wrap_content"
-          android:layout_marginStart="8dp"
-          android:layout_marginLeft="8dp"
-          android:layout_marginEnd="8dp"
-          android:layout_marginRight="8dp"
+          android:layout_margin="8dp"
           app:layout_constraintBottom_toTopOf="@+id/task_desc"
           app:layout_constraintEnd_toEndOf="parent"
           app:layout_constraintStart_toStartOf="parent"
@@ -85,11 +82,7 @@
           style="@style/TextAppearance.AppCompat.Medium"
           android:layout_width="0dp"
           android:layout_height="wrap_content"
-          android:layout_marginStart="8dp"
-          android:layout_marginLeft="8dp"
-          android:layout_marginTop="5dp"
-          android:layout_marginEnd="8dp"
-          android:layout_marginRight="8dp"
+          android:layout_margin="8dp"
           android:lines="1"
           app:layout_constraintBottom_toBottomOf="parent"
           app:layout_constraintEnd_toEndOf="parent"
