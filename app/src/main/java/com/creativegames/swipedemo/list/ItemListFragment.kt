@@ -15,6 +15,7 @@ import com.creativegames.swipedemo.R
 import com.creativegames.swipedemo.databinding.FragmentItemListBinding
 import com.creativegames.swipedemo.detail.ItemDetailFragment
 import com.creativegames.swipedemo.model.PlaceholderItem
+import com.creativegames.swipedemo.recyclerviewenhanced.RecyclerTouchListener
 
 /**
  * A Fragment representing a list of Pings. This fragment
@@ -87,7 +88,7 @@ class ItemListFragment : Fragment() {
 
     recyclerView.adapter = RecyclerviewAdapter(items)
 
-    onTouchListener = RecyclerTouchListener(activity, recyclerView)
+    onTouchListener = RecyclerTouchListener(requireActivity(), recyclerView)
     onTouchListener
       .setClickable(object : RecyclerTouchListener.OnRowClickListener {
         override fun onRowClicked(position: Int) {
