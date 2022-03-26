@@ -22,7 +22,8 @@ import kotlin.math.abs
  * RecyclerView.OnItemTouchListener to provide clicking and swiping functionalities to RecyclerView
  * The original library in Java https://github.com/nikhilpanju/RecyclerViewEnhanced
  */
-class RecyclerTouchListener(var activity: FragmentActivity, recyclerView: RecyclerView) : OnItemTouchListener {
+class RecyclerTouchListener(var activity: FragmentActivity, recyclerView: RecyclerView) : OnItemTouchListener,
+  OnActivityTouchListener {
 
   companion object {
     private const val TAG = "RecyclerTouchListener"
@@ -168,6 +169,10 @@ class RecyclerTouchListener(var activity: FragmentActivity, recyclerView: Recycl
     fgViewID = foregroundID
     bgViewID = backgroundID
     mBgClickListener = listener
+
+    if (activity is RecyclerTouchListenerHelper) (activity as RecyclerTouchListenerHelper).setOnActivityTouchListener(this)
+
+
     val displayMetrics = DisplayMetrics()
     activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
     screenHeight = displayMetrics.heightPixels
@@ -726,6 +731,17 @@ class RecyclerTouchListener(var activity: FragmentActivity, recyclerView: Recycl
     return false
   }
 
+  /**
+   * Gets coordinates from Activity and closes any
+   * swiped rows if touch happens outside the recycler view
+   */
+  override fun getTouchCoordinates(ev: MotionEvent?) {
+    val y = ev?.rawY?.toInt()
+    if (ev != null && y != null) {
+      if (swipeable && bgVisible && ev.actionMasked == MotionEvent.ACTION_DOWN && y < heightOutsideRView) closeVisibleBG(null)
+    }
+  }
+
   private fun shouldIgnoreAction(touchedPosition: Int): Boolean {
     return rView == null || ignoredViewTypes.contains(rView.adapter!!.getItemViewType(touchedPosition))
   }
@@ -753,6 +769,10 @@ class RecyclerTouchListener(var activity: FragmentActivity, recyclerView: Recycl
   interface OnSwipeListener {
     fun onSwipeOptionsClosed()
     fun onSwipeOptionsOpened()
+  }
+
+  interface RecyclerTouchListenerHelper {
+    fun setOnActivityTouchListener(listener: OnActivityTouchListener?)
   }
 
   init {
@@ -791,4 +811,8 @@ class RecyclerTouchListener(var activity: FragmentActivity, recyclerView: Recycl
       override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {}
     })
   }
+}
+
+public interface OnActivityTouchListener {
+  fun getTouchCoordinates(ev: MotionEvent?)
 }
