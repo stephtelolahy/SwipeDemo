@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.graphics.Rect
 import android.os.Handler
+import android.os.Looper
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.MotionEvent
@@ -15,33 +16,37 @@ import android.widget.ListView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
-import java.util.*
 import kotlin.math.abs
 
 /**
  * RecyclerView.OnItemTouchListener to provide clicking and swiping functionalities to RecyclerView
  * The original library in Java https://github.com/nikhilpanju/RecyclerViewEnhanced
  */
-class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerView) : OnItemTouchListener {
-  
-  private val handler = Handler()
+class RecyclerTouchListener(var activity: FragmentActivity, recyclerView: RecyclerView) : OnItemTouchListener {
+
+  companion object {
+    private const val TAG = "RecyclerTouchListener"
+    const val ANIMATION_STANDARD = 300L
+    const val ANIMATION_CLOSE = 150L
+    const val LONG_CLICK_DELAY = 800L
+  }
+
+  private val handler = Handler(Looper.getMainLooper())
   private var unSwipeableRows: List<Int>
 
   /*
    * independentViews are views on the foreground layer which when clicked, act "independent" from the foreground
    * ie, they are treated separately from the "row click" action
    */
-  var independentViews: List<Int>
+  private var independentViews: List<Int>
   var unClickableRows: List<Int> = emptyList()
-  var optionViews: List<Int>
-  var ignoredViewTypes: MutableSet<Int>
+  private var optionViews: List<Int>
+  private var ignoredViewTypes: MutableSet<Int>
 
   // Cached ViewConfiguration and system-wide constant values
   private val touchSlop: Int
   private val minFlingVel: Int
   private val maxFlingVel: Int
-  private val ANIMATION_STANDARD: Long = 300
-  private val ANIMATION_CLOSE: Long = 150
 
   // Fixed properties
   private val rView: RecyclerView?
@@ -77,19 +82,17 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
   //view ID
   private var fgViewID = 0
   private var bgViewID = 0
-  private val bgViewIDLeft = 0
   private var fadeViews: ArrayList<Int>?
   private var mRowClickListener: OnRowClickListener? = null
   private var mRowLongClickListener: OnRowLongClickListener? = null
   private var mBgClickListener: OnSwipeOptionsClickListener? = null
-  private val mBgClickListenerLeft: OnSwipeOptionsClickListener? = null
 
   // user choices
   private var clickable = false
   private var longClickable = false
   private var swipeable = false
   private var longClickVibrate = false
-  var mLongPressed = Runnable {
+  private var mLongPressed = Runnable {
     if (!longClickable) return@Runnable
     mLongClickPerformed = true
     if (!bgVisible && touchedPosition >= 0 && !unClickableRows.contains(touchedPosition) && !isRViewScrolling) {
@@ -143,12 +146,12 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
   }
 
   fun setIndependentViews(vararg viewIds: Int?): RecyclerTouchListener {
-    independentViews = ArrayList(Arrays.asList(*viewIds))
+    independentViews = viewIds.filterNotNull()
     return this
   }
 
   fun setUnClickableRows(vararg rows: Int?): RecyclerTouchListener {
-    unClickableRows = ArrayList(Arrays.asList(*rows))
+    unClickableRows = rows.filterNotNull()
     return this
   }
 
@@ -165,9 +168,9 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
     fgViewID = foregroundID
     bgViewID = backgroundID
     mBgClickListener = listener
-    val displaymetrics = DisplayMetrics()
-    act.windowManager.defaultDisplay.getMetrics(displaymetrics)
-    screenHeight = displaymetrics.heightPixels
+    val displayMetrics = DisplayMetrics()
+    activity.windowManager.defaultDisplay.getMetrics(displayMetrics)
+    screenHeight = displayMetrics.heightPixels
     return this
   }
 
@@ -178,19 +181,19 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
   }
 
   fun setSwipeOptionViews(vararg viewIds: Int?): RecyclerTouchListener {
-    optionViews = ArrayList(Arrays.asList(*viewIds))
+    optionViews = viewIds.filterNotNull()
     return this
   }
 
   fun setUnSwipeableRows(vararg rows: Int?): RecyclerTouchListener {
-    unSwipeableRows = ArrayList(Arrays.asList(*rows))
+    unSwipeableRows = rows.filterNotNull()
     return this
   }
 
   //////////////// Fade Views ////////////////////
   // Set views which are faded out as fg is opened
   fun setViewsToFade(vararg viewIds: Int?): RecyclerTouchListener {
-    fadeViews = ArrayList(Arrays.asList(*viewIds))
+    fadeViews = ArrayList(viewIds.filterNotNull())
     return this
   }
 
@@ -247,14 +250,14 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
   }
 
   override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
-  fun invalidateSwipeOptions() {
+  private fun invalidateSwipeOptions() {
     bgWidth = 1
   }
 
   fun openSwipeOptions(position: Int) {
     if (!swipeable || rView!!.getChildAt(position) == null || unSwipeableRows.contains(position) || shouldIgnoreAction(position)) return
     if (bgWidth < 2) {
-      if (act.findViewById<View?>(bgViewID) != null) bgWidth = act.findViewById<View>(bgViewID).width
+      if (activity.findViewById<View?>(bgViewID) != null) bgWidth = activity.findViewById<View>(bgViewID).width
       heightOutsideRView = screenHeight - rView.height
     }
     touchedPosition = position
@@ -375,7 +378,7 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
 
   private fun handleTouchEvent(motionEvent: MotionEvent): Boolean {
     if (swipeable && bgWidth < 2) {
-      act.findViewById<View?>(bgViewID)?.let { bgWidth = it.width }
+      activity.findViewById<View?>(bgViewID)?.let { bgWidth = it.width }
       heightOutsideRView = screenHeight - rView!!.height
     }
     when (motionEvent.actionMasked) {
@@ -418,8 +421,9 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
           }
           if (longClickable) {
             mLongClickPerformed = false
-            val LONG_CLICK_DELAY = 800
-            handler.postDelayed(mLongPressed, LONG_CLICK_DELAY.toLong())
+            handler.postDelayed({
+              mLongPressed
+            }, LONG_CLICK_DELAY)
           }
           if (swipeable) {
             mVelocityTracker = VelocityTracker.obtain()
@@ -450,7 +454,8 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
          * options is displayed - close the options menu for the row which is displaying it
          * (bgVisibleView and bgVisiblePosition is used for this purpose which registers which view and
          * which position has it's options menu opened)
-         */x = motionEvent.rawX.toInt()
+         */
+        x = motionEvent.rawX.toInt()
         y = motionEvent.rawY.toInt()
         rView.getHitRect(rect)
         if (swipeable && bgVisible && touchedPosition != bgVisiblePosition) {
@@ -509,15 +514,15 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
                    * If the user has swiped more than half of the width of the options menu, or if the
                    * velocity of swiping is between min and max fling values
                    * "proper" variable are set true
-                   */if (Math.abs(mFinalDelta) > bgWidth / 2 && isFgSwiping) {
+                   */if (abs(mFinalDelta) > bgWidth / 2 && isFgSwiping) {
           swipedLeftProper = mFinalDelta < 0
           swipedRightProper = mFinalDelta > 0
         } else if (swipeable) {
           mVelocityTracker!!.addMovement(motionEvent)
           mVelocityTracker!!.computeCurrentVelocity(1000)
           val velocityX = mVelocityTracker!!.xVelocity
-          val absVelocityX = Math.abs(velocityX)
-          val absVelocityY = Math.abs(mVelocityTracker!!.yVelocity)
+          val absVelocityX = abs(velocityX)
+          val absVelocityY = abs(mVelocityTracker!!.yVelocity)
           if (minFlingVel <= absVelocityX && absVelocityX <= maxFlingVel && absVelocityY < absVelocityX && isFgSwiping
           ) {
             // dismiss only if flinging in the same direction as dragging
@@ -641,7 +646,7 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
         /*
          * isFgSwiping variable which is set to true here is used to alter the swipedLeft, swipedRightProper
          * variables in "ACTION_UP" block by checking if user is actually swiping at present or not
-         */if (!isFgSwiping && Math.abs(deltaX) > touchSlop && Math.abs(deltaY) < Math.abs(deltaX) / 2) {
+         */if (!isFgSwiping && abs(deltaX) > touchSlop && abs(deltaY) < abs(deltaX) / 2) {
           handler.removeCallbacks(mLongPressed)
           isFgSwiping = true
           mSwipingSlop = if (deltaX > 0) touchSlop else -touchSlop
@@ -665,7 +670,7 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
             // fades all the fadeViews gradually to 0 alpha as dragged
             if (fadeViews != null) {
               for (viewID in fadeViews!!) {
-                touchedView!!.findViewById<View>(viewID).alpha = 1 - Math.abs(translateAmount) / bgWidth
+                touchedView!!.findViewById<View>(viewID).alpha = 1 - abs(translateAmount) / bgWidth
               }
             }
           } else if (deltaX > 0 && bgVisible) {
@@ -679,7 +684,7 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
               // fades all the fadeViews gradually to 0 alpha as dragged
               if (fadeViews != null) {
                 for (viewID in fadeViews!!) {
-                  touchedView!!.findViewById<View>(viewID).alpha = 1 - Math.abs(translateAmount) / bgWidth
+                  touchedView!!.findViewById<View>(viewID).alpha = 1 - abs(translateAmount) / bgWidth
                 }
               }
             } else {
@@ -691,7 +696,7 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
               // fades all the fadeViews gradually to 0 alpha as dragged
               if (fadeViews != null) {
                 for (viewID in fadeViews!!) {
-                  touchedView!!.findViewById<View>(viewID).alpha = 1 - Math.abs(translateAmount) / bgWidth
+                  touchedView!!.findViewById<View>(viewID).alpha = 1 - abs(translateAmount) / bgWidth
                 }
               }
             }
@@ -748,10 +753,6 @@ class RecyclerTouchListener(var act: FragmentActivity, recyclerView: RecyclerVie
   interface OnSwipeListener {
     fun onSwipeOptionsClosed()
     fun onSwipeOptionsOpened()
-  }
-
-  companion object {
-    private const val TAG = "RecyclerTouchListener"
   }
 
   init {
